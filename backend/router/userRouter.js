@@ -4,7 +4,8 @@ import { protectedRoute } from '../middleware/userMiddleware.js'
 import { addCategory, getCategories } from '../controller/categoryController.js'
 import { addSubCategory, getSubCategories } from '../controller/subCategoryController.js'
 import upload from '../middleware/multer.js'
-import { addProduct, getProducts, updateProduct } from '../controller/ProductController.js'
+import { addProduct, getProductDetails, getProducts, updateProduct } from '../controller/ProductController.js'
+import { addToCart, getCartItems, removeFromCart, clearCart } from '../controller/cartController.js'
 
 const router = express.Router()
 
@@ -13,14 +14,21 @@ router.post('/register', Register)
 router.post('/login', Login)
 
 router.post("/addCategory", protectedRoute, addCategory);
-router.get("/categories", protectedRoute, getCategories);
+router.get("/getCategories", protectedRoute, getCategories);
 
 
-router.post("/subcategory", protectedRoute, addSubCategory);
+router.post("/addSubcategory", protectedRoute, addSubCategory);
 router.get("/subcategories", protectedRoute, getSubCategories);
 
-router.post("/product", protectedRoute, upload.array("images", 5), addProduct);
-router.get("/products", protectedRoute, getProducts);
-router.put("/product/:id", protectedRoute, upload.array("images", 5), updateProduct);
+router.post("/addproduct", protectedRoute, upload.array("images", 5), addProduct);
+router.get("/getproducts", protectedRoute, getProducts);
+router.get("/productdetails/:id", protectedRoute, getProductDetails);
+router.put("/updateproduct/:id", protectedRoute, upload.array("images", 5), updateProduct);
+
+// Cart routes
+router.post("/addToCart", protectedRoute, addToCart);
+router.get("/getCart", protectedRoute, getCartItems);
+router.delete("/removeFromCart/:productId", protectedRoute, removeFromCart);
+router.delete("/clearCart", protectedRoute, clearCart);
 
 export default router
