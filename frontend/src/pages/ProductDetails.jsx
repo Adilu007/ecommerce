@@ -21,9 +21,19 @@ const ProductDetails = () => {
     dispatch(getCartItems()); // Load cart items to check if product is already in cart
   }, [dispatch, id]);
 
+  // Update selectedVariant when productDetails changes to ensure valid index
+  useEffect(() => {
+    if (productDetails?.variants?.length > 0 && selectedVariant >= productDetails.variants.length) {
+      setSelectedVariant(0);
+    }
+  }, [productDetails, selectedVariant]);
+
   const handleQuantityChange = (change) => {
+    if (!productDetails?.variants?.[selectedVariant]) return;
+    
     const newQuantity = quantity + change;
-    if (newQuantity >= 1 && newQuantity <= productDetails.variants[selectedVariant].quantity) {
+    const maxQuantity = productDetails.variants[selectedVariant].quantity;
+    if (newQuantity >= 1 && newQuantity <= maxQuantity) {
       setQuantity(newQuantity);
     }
   };
@@ -33,16 +43,71 @@ const ProductDetails = () => {
 
   // Handle add to cart
   const handleAddToCart = () => {
-    console.log("Adding to cart - Product ID:", id);
-    console.log("User logged in:", !!localStorage.getItem("user"));
     dispatch(addToCart(id));
   };
 
-  if (isLoading) return <p>Loading product details...</p>;
-  if (isError) return <p className="text-red-600">{message}</p>;
-  if (!productDetails) return <p>No product found.</p>;
+  // Loading states and error handling
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading product details...</p>
+        </div>
+      </div>
+    );
+  }
 
-  const selectedVariantData = productDetails.variants[selectedVariant];
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 text-lg">{message}</p>
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!productDetails) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600 text-lg">No product found.</p>
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Safety check for variants
+  if (!productDetails.variants || productDetails.variants.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 text-lg">Product has no variants available.</p>
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedVariantData = productDetails.variants[selectedVariant] || productDetails.variants[0];
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -90,16 +155,16 @@ const ProductDetails = () => {
           </div>
 
           <div className="flex-1">
-            <h2 className="text-2xl font-semibold mb-2">{productDetails.title}</h2>
+            <h2 className="text-2xl font-semibold mb-2">{productDetails.title || 'Product Title'}</h2>
             <p className="text-2xl font-bold text-gray-900 mb-4">
-              ${selectedVariantData.price}
+              ${selectedVariantData?.price || '0.00'}
             </p>
             <div className="mb-6">
               <p className="text-green-600 font-medium mb-1">
                 Availability: <span className="text-green-600">✓ In stock</span>
               </p>
               <p className="text-orange-500 text-sm">
-                Hurry up! only {selectedVariantData.quantity} product left in stock!
+                Hurry up! only {selectedVariantData?.quantity || 0} product left in stock!
               </p>
             </div>
 
@@ -121,7 +186,7 @@ const ProductDetails = () => {
                             : "border-gray-300 text-gray-700 hover:border-gray-400"
                         }`}
                       >
-                        {variant.ram}
+                        {variant?.ram || `Variant ${idx + 1}`}
                       </button>
                     ))}
                   </div>
@@ -141,7 +206,7 @@ const ProductDetails = () => {
                     <button
                       onClick={() => handleQuantityChange(1)}
                       className="flex-1 py-2 text-gray-600 hover:bg-gray-100 rounded-r-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                      disabled={quantity >= selectedVariantData.quantity}
+                      disabled={quantity >= (selectedVariantData?.quantity || 0)}
                     >
                       +
                     </button>

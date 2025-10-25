@@ -4,7 +4,7 @@ import { protectedRoute } from '../middleware/userMiddleware.js'
 import { addCategory, getCategories } from '../controller/categoryController.js'
 import { addSubCategory, getSubCategories } from '../controller/subCategoryController.js'
 import upload from '../middleware/multer.js'
-import { addProduct, getProductDetails, getProducts, updateProduct } from '../controller/ProductController.js'
+import { addProduct, getProductDetails, getProducts, updateProduct } from '../controller/productController.js'
 import { addToCart, getCartItems, removeFromCart, clearCart } from '../controller/cartController.js'
 
 const router = express.Router()
